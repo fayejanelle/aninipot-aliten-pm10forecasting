@@ -11,7 +11,7 @@ import base64
 import os
 from dotenv import load_dotenv
 
-st.set_page_config(page_title="Main - PM10 Forecasting App", page_icon="🏠", layout="wide")
+st.set_page_config(page_title="Main - PM10 Forecasting App", page_icon="🏠", layout="wide", initial_sidebar_state="expanded")
 
 
 combined_image = Image.open('data/combined_NZSE_AC_logo.png')
