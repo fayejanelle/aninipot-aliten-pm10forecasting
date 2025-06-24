@@ -2986,7 +2986,7 @@ if(uploaded_file == 'yes'):
                 
                 # Model Training Page
                 elif page == "Model Training":
-                    st.title("🤖 Model Training with Feature Engineering and K-fold Validation")
+                    st.title("⛳ Model Training with Feature Engineering and K-fold Validation")
                     
                     if st.session_state.data is not None:
                         # Missing values check
@@ -3107,7 +3107,7 @@ if(uploaded_file == 'yes'):
                                     st.info("ℹ️ Using default hyperparameters (faster but may be suboptimal)")
                         
                         # Training button and logic
-                        if st.sidebar.button("🤖 Train Model"):
+                        if st.sidebar.button("⛳ Train Model"):
                             # Check if model can proceed with current data state
                             missing_info = check_missing_values(st.session_state.daily_data)
                             can_proceed, compatibility_message = check_model_missing_value_compatibility(model_type, missing_info)
