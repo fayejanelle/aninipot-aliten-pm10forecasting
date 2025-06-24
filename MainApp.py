@@ -613,7 +613,7 @@ if st.session_state.authenticated:
             csv_data = csv_buffer.getvalue()
             
             st.download_button(
-                label="Download as CSV.",
+                label="Download as CSV",
                 data=csv_data,
                 file_name=f"transformed_timeseries_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv",

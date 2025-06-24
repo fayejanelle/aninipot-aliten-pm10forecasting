@@ -819,13 +819,13 @@ if(uploaded_file == 'yes'):
                         # 'max_samples': [0.75, 0.77],
                         # 'min_weight_fraction_leaf': [0.0],   
                         ### EXHAUSTIVE
-                        # 'n_estimators': [400, 500, 600],
-                        # 'max_depth': [20, 25, None],
-                        # 'min_samples_split': [2, 5, 10],
-                        # 'min_samples_leaf': [1, 2, 4],
-                        # 'max_features': [0.6, 0.7, 0.8],  # This is the key change!
-                        # 'max_samples': [0.9, 1.0], 
-                        # 'random_state': [42] 
+                        'n_estimators': [400, 500, 600],
+                        'max_depth': [20, 25, None],
+                        'min_samples_split': [2, 5, 10],
+                        'min_samples_leaf': [1, 2, 4],
+                        'max_features': [0.6, 0.7, 0.8],  # This is the key change!
+                        'max_samples': [0.9, 1.0], 
+                        'random_state': [42] 
                         #OPTIMIZED1  
                         # 'max_depth': [10, 15, 20],  # Reduced from [5, 10, 15, 20]
                         # 'min_samples_split': [30, 50, 80],  # Reduced from [20, 50, 100]
@@ -833,12 +833,12 @@ if(uploaded_file == 'yes'):
                         # 'max_features': ['sqrt', None],  # Kept essential options
                         # Total: 3 * 3 * 2 * 2 = 36 combinations (62% reduction)   
                         #UPDATED 6.12 PM - JANICE
-                        'max_depth': [11, 12],  # Slightly shallower options
-                        'min_samples_split': [65, 70],  # Higher = more conservative
-                        'min_samples_leaf': [30, 35],  # Higher = more stable
-                        'max_features': [0.6, 0.65],
-                        'n_estimators': [300, 400],  # More trees
-                        'random_state': [42]
+                        # 'max_depth': [11, 12],  # Slightly shallower options
+                        # 'min_samples_split': [65, 70],  # Higher = more conservative
+                        # 'min_samples_leaf': [30, 35],  # Higher = more stable
+                        # 'max_features': [0.6, 0.65],
+                        # 'n_estimators': [300, 400],  # More trees
+                        # 'random_state': [42]
                     },
                     'xgboost': {
                         #EXHAUSTIVE
