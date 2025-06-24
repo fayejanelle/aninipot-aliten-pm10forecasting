@@ -189,7 +189,7 @@ if(uploaded_file == 'yes'):
                 return ['knn',  'svr'] # 'arima', 'sarima', 'prophet', 'linear', 'ridge', 'lasso', , 'naive_bayes', 'lstm', 'ann', 'gru'
 
             def get_models_handling_missing_data():
-                return ['decision_tree', 'rf', 'xgboost']
+                return ['Decision Tree', 'Random Forest', 'XGBoost']
 
             def get_neural_network_models():
                 return ['lstm', 'ann', 'gru']
@@ -754,7 +754,7 @@ if(uploaded_file == 'yes'):
                     'linear': {'fit_intercept': [True, False]},
                     'ridge': {'alpha': [0.1, 1, 10, 100, 1000], 'fit_intercept': [True, False]},
                     'lasso': {'alpha': [0.01, 0.1, 1, 10, 100], 'fit_intercept': [True, False]},
-                    'decision_tree': {
+                    'Decision Tree': {
                         # 'max_depth': [5, 10, 15, 20],
                         # 'min_samples_split': [20, 50, 100],
                         # 'min_samples_leaf': [10, 20, 50],
@@ -776,7 +776,7 @@ if(uploaded_file == 'yes'):
                         'weights': ['uniform', 'distance'],
                         'metric': ['euclidean', 'manhattan']
                     },
-                    'rf': {
+                    'Random Forest': {
                         # 'n_estimators': [100, 200, 300],
                         # 'max_depth': [50, 60, 70, 80],
                         # 'min_samples_split': c 50],
@@ -840,7 +840,7 @@ if(uploaded_file == 'yes'):
                         # 'n_estimators': [300, 400],  # More trees
                         # 'random_state': [42]
                     },
-                    'xgboost': {
+                    'XGBoost': {
                         #EXHAUSTIVE
                         # 'n_estimators': [100, 200, 300],
                         # 'learning_rate': [0.01, 0.05, 0.1],
@@ -1118,7 +1118,7 @@ if(uploaded_file == 'yes'):
             def train_decision_tree(X_train, y_train, X_val, y_val, tune_params=True, n_folds=3, auto_cv=True):
                 """Train Decision Tree with conservative hyperparameters"""
                 if tune_params:
-                    param_space = get_hyperparameter_space('decision_tree')
+                    param_space = get_hyperparameter_space('Decision Tree')
                     model, best_params, _ = tune_hyperparameters(
                         DecisionTreeRegressor, X_train, y_train, param_space, 
                         method='random', cv_folds=n_folds, auto_cv=auto_cv
@@ -1192,7 +1192,7 @@ if(uploaded_file == 'yes'):
                 # Add this to your training functions:
 
                 if tune_params:
-                    param_space = get_hyperparameter_space('rf')
+                    param_space = get_hyperparameter_space('Random Forest')
                     if 'bootstrap' not in param_space:
                         param_space['bootstrap'] = [True] #True
 
@@ -1223,7 +1223,7 @@ if(uploaded_file == 'yes'):
             def train_xgboost(X_train, y_train, X_val, y_val, tune_params=True, n_folds=3, auto_cv=True):
                 """Train XGBoost with conservative hyperparameters"""
                 if tune_params:
-                    param_space = get_hyperparameter_space('xgboost')
+                    param_space = get_hyperparameter_space('XGBoost')
                     model, best_params, _ = tune_hyperparameters(
                         XGBRegressor, X_train, y_train, param_space, 
                         method='random', cv_folds=n_folds, auto_cv=auto_cv
@@ -1876,7 +1876,7 @@ if(uploaded_file == 'yes'):
                 last_date = pd.Timestamp(test_data['Date'].iloc[-1])
                 future_dates = [last_date + timedelta(days=i+1) for i in range(days)]
                 
-                if model_type in ['rf', 'decision_tree'] and hasattr(model, 'estimators_' if model_type == 'rf' else 'tree_'):
+                if model_type in ['Random Forest', 'Decision Tree'] and hasattr(model, 'estimators_' if model_type == 'Random Forest' else 'tree_'):
                     forecasts = []
                     lower_bounds = []
                     upper_bounds = []
@@ -1895,7 +1895,7 @@ if(uploaded_file == 'yes'):
                         if scaler:
                             X_next = scaler.transform(X_next)
                         
-                        if model_type == 'rf':
+                        if model_type == 'Random Forest':
                             tree_predictions = np.array([tree.predict(X_next)[0] for tree in model.estimators_])
                             pred = np.mean(tree_predictions)
                             std = np.std(tree_predictions)
@@ -2281,15 +2281,15 @@ if(uploaded_file == 'yes'):
                     scaler_use = None
                     
                     # Training logic for different model types
-                    if model_type == 'decision_tree':
+                    if model_type == 'Decision Tree':
                         model, train_results, val_results, best_params = train_decision_tree(X_train, y_train, X_val, y_val, tune_params=tune_hyperparams, n_folds=n_folds, auto_cv=auto_cv) # Added auto_cv
                         y_test_pred = model.predict(X_test)
                         test_data_use = test_with_lags
-                    elif model_type == 'rf':
+                    elif model_type == 'Random Forest':
                         model, train_results, val_results, best_params = train_random_forest(X_train, y_train, X_val, y_val, tune_params=tune_hyperparams, n_folds=n_folds, auto_cv=auto_cv) # Added auto_cv)
                         y_test_pred = model.predict(X_test) 
                         test_data_use = test_with_lags
-                    elif model_type == 'xgboost':
+                    elif model_type == 'XGBoost':
                         model, train_results, val_results, best_params = train_xgboost(X_train, y_train, X_val, y_val, tune_params=tune_hyperparams, n_folds=n_folds, auto_cv=auto_cv) # Added auto_cv
                         y_test_pred = model.predict(X_test)
                         test_data_use = test_with_lags
@@ -2357,7 +2357,7 @@ if(uploaded_file == 'yes'):
                 
                 results.update({'model': model, 'test_pred': y_test_pred, 'train_results': train_results, 'val_results': val_results, 'test_results': test_results, 'best_params': best_params, 'forecast': forecast_df, 'model_type': model_type, 'scaling_info': scaling_info})
                 
-                if model_type in ['rf', 'xgboost', 'decision_tree']:
+                if model_type in ['Random Forest', 'XGBoost', 'Decision Tree']:
                     importance_fig, importance_fig_grouped, importance_df = plot_feature_importance_categorical(model, feature_names, model_type.upper())
                     results['importance_fig'], results['importance_fig_grouped'], results['importance_df'] = importance_fig, importance_fig_grouped, importance_df
                 
@@ -3043,14 +3043,14 @@ if(uploaded_file == 'yes'):
                         st.sidebar.title("Model Settings")
                         model_type = st.sidebar.selectbox(
                             "Select Model", 
-                            ["decision_tree",  "rf", "xgboost" ] #"knn", "svr", "lstm", "ann", "gru", "arima", "prophet", "linear", "ridge", "lasso"                        
+                            ["Decision Tree",  "Random Forest", "XGBoost" ] #"knn", "svr", "lstm", "ann", "gru", "arima", "prophet", "linear", "ridge", "lasso"                        
                         )
                         
                         # Show model-specific information
                         missing_info = check_missing_values(st.session_state.daily_data)
                         can_proceed, compatibility_message = check_model_missing_value_compatibility(model_type, missing_info)
                         
-                        if model_type in ['decision_tree', 'rf', 'xgboost']:
+                        if model_type in ['Decision Tree', 'Random Forest', 'XGBoost']:
                             st.sidebar.success("🌳 **Tree-based model**: Excellent for handling composite features and capturing non-linear patterns !") #missing values
                             if missing_info:
                                 st.sidebar.info(f"✅ {compatibility_message}")
@@ -3724,7 +3724,7 @@ if(uploaded_file == 'yes'):
                                 st.write("⚠️ Consider ensemble methods or additional composite features to improve short-term forecasting performance.")
                             
                             # Specific recommendations based on model type
-                            if best_model_name in ['rf', 'xgboost', 'decision_tree']:
+                            if best_model_name in ['Random Forest', 'XGBoost', 'Decision Tree']:
                                 st.write("🌳 Tree-based model selected - excellent for capturing non-linear patterns in composite features.")
                             elif best_model_name in ['knn']:
                                 st.write("🎯 KNN selected - performs well with composite features and robust scaling!")
