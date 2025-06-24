@@ -11,7 +11,7 @@ import base64
 import os
 from dotenv import load_dotenv
 
-st.set_page_config(page_title="Main - PM10 Forecasting App", layout="wide")
+st.set_page_config(page_title="Main - PM10 Forecasting App", page_icon="🏠", layout="wide")
 
 
 combined_image = Image.open('data/combined_NZSE_AC_logo.png')
@@ -228,7 +228,7 @@ if st.session_state.authenticated:
             
             2. **Process**: Click "Process Files" to transform the data
                - Only hourly measurements (XX:00:00) will be kept
-               - Data will be pivoted with parameters as columns
+               - Data will be pivoted with parameters as columns 
             
             3. **Select Periods**: Choose which years to include in the final dataset
                - View data availability percentage based on expected hourly data
