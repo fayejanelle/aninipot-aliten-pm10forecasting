@@ -343,7 +343,7 @@ if(uploaded_file == 'yes'):
                     "hovermode": "x unified",
                     "height": 700,
                     "template": "plotly_white",
-                    "title": f"Air Quality with Events – {selected_year}"
+                    "title": f"Air and Traffic with Events – {selected_year}"
                 }
                 
                 # Add secondary variables with different y-axes
