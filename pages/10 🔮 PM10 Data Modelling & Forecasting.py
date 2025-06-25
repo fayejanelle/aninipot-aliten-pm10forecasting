@@ -3580,16 +3580,35 @@ if(uploaded_file == 'yes'):
                                         file_name=f"pm10_params_{download_model}.json",
                                         mime="application/json"
                                     )
-                        
+                                              
                         # Interactive Forecast Visualization
                         st.header("Interactive Forecast Visualization")
-                        
+
+                        # Get available models from session state
+                        available_models = list(st.session_state.model_results.keys())
+
+                        # Determine default model safely
+                        default_models = []
+                        if not summary_df.empty and available_models:
+                            # Get the best model name from summary (it's in uppercase like 'XGBOOST')
+                            best_model_upper = summary_df.iloc[0]['Model']
+                            
+                            # Find the matching key in model_results (which might be lowercase)
+                            for model_key in available_models:
+                                if model_key.upper() == best_model_upper:
+                                    default_models = [model_key]
+                                    break
+                            
+                            # If no match found, use the first available model
+                            if not default_models and available_models:
+                                default_models = [available_models[0]]
+
                         viz_models = st.multiselect(
                             "Select Models to Visualize",
-                            list(st.session_state.model_results.keys()),
-                            default=[summary_df.iloc[0]['Model'].lower()] if not summary_df.empty else []
+                            available_models,
+                            default=default_models  # Use the safely determined default
                         )
-                        
+
                         if viz_models:
                             fig = go.Figure()
                             
