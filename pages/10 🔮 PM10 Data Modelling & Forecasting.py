@@ -883,7 +883,8 @@ if(uploaded_file == 'yes'):
                 return param_spaces.get(model_type, {})
 
             # def tune_hyperparameters(model_class, X_train, y_train, param_space, cv_folds=3, scoring='neg_mean_squared_error', method='random'):
-            def tune_hyperparameters(model_class, X_train, y_train, param_space, cv_folds=3, scoring='neg_mean_squared_error', method='random', auto_cv=True):
+            def tune_hyperparameters(model_class, X_train, y_train, param_space, cv_folds=3, 
+                                    scoring='neg_mean_squared_error', method='random', auto_cv=True, progress_callback=None): #ADDED PROGRESS
                 """Conservative hyperparameter tuning"""
                 if len(param_space) == 0:
                     return model_class(), {}, 0
@@ -908,7 +909,7 @@ if(uploaded_file == 'yes'):
                         cv=cv,
                         scoring=scoring,
                         n_jobs=-1,
-                        verbose=0
+                        verbose=1 if progress_callback else 0  # Add verbose if progress callback
                     )
                 else:
                     search = RandomizedSearchCV(
@@ -918,7 +919,7 @@ if(uploaded_file == 'yes'):
                         cv=cv,
                         scoring=scoring,
                         n_jobs=-1,
-                        verbose=0,
+                        verbose=1 if progress_callback else 0,  # Add verbose if progress callback
                         random_state=42
                     )
                 
@@ -2183,12 +2184,17 @@ if(uploaded_file == 'yes'):
             def run_forecast_model_enhanced(model_type, train_data, val_data, test_data, target_col='PM10', 
                                     feature_cols=None, forecast_days=3, tune_hyperparams=True,
                                     handle_outliers_flag=True, outlier_method='cap',
-                                    n_folds=3, auto_cv=True, **kwargs): # ADD auto_cv=True parameter
+                                    n_folds=3, auto_cv=True, progress_bar=None, status_text=None, **kwargs): # ADD auto_cv=True parameter, PROGRESS BAR
                 """Enhanced forecast model with ALL fixes and Optuna optimization"""
                 results = {}
                 
                 forecast_days = min(forecast_days, 3)
                 
+                # Update progress
+                if progress_bar and status_text:
+                    status_text.text('Checking for missing values...')
+                    progress_bar.progress(35)
+
                 # IMMEDIATE MISSING VALUE CHECK
                 train_missing = check_missing_values(train_data, [model_type])
                 val_missing = check_missing_values(val_data, [model_type])
@@ -2220,6 +2226,11 @@ if(uploaded_file == 'yes'):
                 }
                 
                 if handle_outliers_flag:
+
+                    if progress_bar and status_text:
+                        status_text.text('Detecting and handling outliers...')
+                        progress_bar.progress(40)
+
                     train_outliers = detect_outliers(train_data, target_col, method='iqr')
                     val_outliers = detect_outliers(val_data, target_col, method='iqr')
                     test_outliers = detect_outliers(test_data, target_col, method='iqr')
@@ -2260,16 +2271,31 @@ if(uploaded_file == 'yes'):
                         scaler_use = None
                         test_data_use = test_data
                 else:
+                    # Update progress
+                    if progress_bar and status_text:
+                        status_text.text('Engineering features and creating lag variables...')
+                        progress_bar.progress(45)
+
                     # Add lag features with ULTRA-ROBUST cleaning
                     train_with_lags = add_lag_features(train_data, target_col, show_message=False)
                     val_with_lags = add_lag_features(val_data, target_col, show_message=False)
                     test_with_lags = add_lag_features(test_data, target_col, show_message=False)
+
+                    # Update progress
+                    if progress_bar and status_text:
+                        status_text.text('Adding enhanced features...')
+                        progress_bar.progress(50)
 
                     # Add enhanced domain features
                     train_with_lags = add_enhanced_features(train_with_lags, target_col)
                     val_with_lags = add_enhanced_features(val_with_lags, target_col)
                     test_with_lags = add_enhanced_features(test_with_lags, target_col)
 
+                    # Update progress
+                    if progress_bar and status_text:
+                        status_text.text('Creating feature arrays and encoding...')
+                        progress_bar.progress(55)
+                    
                     lag_features = [col for col in train_with_lags.columns if any(x in col for x in ['_lag_', '_rolling_', '_change', 'Pollution_Momentum', 'Dispersion_Effectiveness'])]
                     
                     # Create feature arrays with one-hot encoding
@@ -2280,6 +2306,14 @@ if(uploaded_file == 'yes'):
                     results['encoders'], results['feature_names'] = encoders, feature_names
                     scaler_use = None
                     
+                    # Training logic for different model types
+                    if progress_bar and status_text:
+                        if tune_hyperparams:
+                            status_text.text(f'Tuning hyperparameters for {model_type.upper()}...')
+                        else:
+                            status_text.text(f'Training {model_type.upper()} with default parameters...')
+                        progress_bar.progress(60)
+
                     # Training logic for different model types
                     if model_type == 'Decision Tree':
                         model, train_results, val_results, best_params = train_decision_tree(X_train, y_train, X_val, y_val, tune_params=tune_hyperparams, n_folds=n_folds, auto_cv=auto_cv) # Added auto_cv
@@ -2347,9 +2381,19 @@ if(uploaded_file == 'yes'):
                     else:
                         raise ValueError(f"Model type '{model_type}' not implemented")
 
+                # Update progress before evaluation
+                if progress_bar and status_text:
+                    status_text.text('Evaluating model performance...')
+                    progress_bar.progress(80)
+
                 test_results = evaluate_model(y_test, y_test_pred, f"{model_type.upper()} (Test)")
                 test_results['Overall_Score'] = calculate_overall_score(test_results)
                 
+                    # Update progress before forecasting
+                if progress_bar and status_text:
+                    status_text.text(f'Generating {forecast_days}-day forecast...')
+                    progress_bar.progress(90)
+
                 if model_type not in ['arima', 'prophet']:
                     forecast_df = forecast_future_enhanced_categorical(model, model_type, test_data_use, feature_names, target_col, days=forecast_days, scaler=scaler_use, encoders=encoders)
                 else:
@@ -3129,9 +3173,21 @@ if(uploaded_file == 'yes'):
                                 else:
                                     st.info(f"🧠 **Training {model_type.upper()} Neural Network** - Using default hyperparameters...")
                             
+                            # CREATE PROGRESS BAR
+                            progress_bar = st.progress(0)
+                            status_text = st.empty()
+                            
+                            # Update progress for different stages
+                            status_text.text(f'Initializing {model_type.upper()} training...')
+                            progress_bar.progress(10)
+
                             # Proceed with training
                             with st.spinner(f"Training {model_type.upper()} model with {n_folds}-fold CV..."):
                                 try:
+                                    # Update progress
+                                    status_text.text('Preparing features and data...')
+                                    progress_bar.progress(20)
+
                                     kwargs = {}
                                     if model_type in ['lstm', 'gru']:
                                         kwargs['time_steps'] = time_steps
@@ -3139,6 +3195,10 @@ if(uploaded_file == 'yes'):
                                     elif model_type == 'ann':
                                         kwargs['use_optuna'] = use_optuna
                                     
+                                    # Update progress before main training
+                                    status_text.text(f'Training {model_type.upper()} model...')
+                                    progress_bar.progress(30)
+
                                     results = run_forecast_model_enhanced(
                                         model_type,
                                         st.session_state.train_data,
@@ -3150,6 +3210,8 @@ if(uploaded_file == 'yes'):
                                         outlier_method=outlier_method,
                                         n_folds=n_folds,
                                         auto_cv=auto_cv,  # ADDED THIS LINE
+                                        progress_bar=progress_bar,  # ADD PROGRESS BAR
+                                        status_text=status_text,     # ADD PROGRESS BAR
                                         **kwargs
                                     )
                                     
