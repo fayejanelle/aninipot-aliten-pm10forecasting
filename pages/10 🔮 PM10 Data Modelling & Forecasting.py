@@ -3215,6 +3215,11 @@ if(uploaded_file == 'yes'):
                                         **kwargs
                                     )
                                     
+                                    # Final progress update
+                                    if 'error' not in results:
+                                        progress_bar.progress(100)
+                                        status_text.text('✅ Training complete!')
+
                                     # Handle missing value errors
                                     if 'error' in results and results['error'] == 'missing_values_incompatible':
                                         st.error(f"❌ **{model_type.upper()} Model Training Failed**")
