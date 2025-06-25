@@ -2605,7 +2605,7 @@ if(uploaded_file == 'yes'):
                     - Apply outlier handling (capping method)
                     - Compare before/after outlier treatment
                     
-                    ### **Step 3: Train Models** 🤖
+                    ### **Step 3: Train Models** ⛳
                     In **Model Training**:
                     - Choose from the different algorithms 
                     - Enable hyperparameter tuning for better performance
