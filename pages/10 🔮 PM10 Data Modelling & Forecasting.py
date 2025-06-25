@@ -3543,7 +3543,7 @@ if(uploaded_file == 'yes'):
                             best_model_for_download = get_best_model_from_summary(summary_df)
 
                         # Create the dropdown with default value
-                        available_models = list(st.session_state.model_results.keys())
+                        # available_models = list(st.session_state.model_results.keys())
                         download_model = st.selectbox(
                             "Select Model for Download",
                             available_models,
