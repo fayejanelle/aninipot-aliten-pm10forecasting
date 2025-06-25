@@ -63,8 +63,8 @@ if(uploaded_file == 'yes'):
                     st.session_state.events_df["Date"] = pd.to_datetime(st.session_state.events_df["Date"])
                 
                 # Streamlit UI
-                st.title("🌬️ Air Quality Data with Events")
-                st.markdown("Visualize air quality data with customizable metrics and events.")
+                st.title("🌬️ Air and Traffic Data with Events")
+                st.markdown("Visualize air and traffic data with customizable metrics and events.")
                 
                 # Sidebar for controls
                 st.sidebar.header("Configuration")
