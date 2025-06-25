@@ -3514,18 +3514,32 @@ if(uploaded_file == 'yes'):
                         
                         # Download options
                         st.header("Download Results")
+
+                        # Get available models
+                        available_models = list(st.session_state.model_results.keys())
+
+                        # Determine the best model index
+                        default_index = 0  # Default to first model if no match found
                         
                         def get_best_model_from_summary(summary_df):
                             """Extract best model name from summary dataframe"""
                             if not summary_df.empty:
                                 # Get the model name and convert to lowercase to match the key format
-                                best_model = summary_df.iloc[0]['Model'].lower()
+                                best_model_upper = summary_df.iloc[0]['Model']
+
+                                # Find the matching key in model_results
+                                for idx, model_key in enumerate(available_models):
+                                    if model_key.upper() == best_model_upper:
+                                        default_index = idx
+                                        break
+
                                 return best_model
+
                             return None
 
                         # Get the best model to use as default
                         best_model_for_download = None
-                        if not summary_df.empty:
+                        if not summary_df.empty and available_models:
                             best_model_for_download = get_best_model_from_summary(summary_df)
 
                         # Create the dropdown with default value
@@ -3533,7 +3547,8 @@ if(uploaded_file == 'yes'):
                         download_model = st.selectbox(
                             "Select Model for Download",
                             available_models,
-                            index=available_models.index(best_model_for_download) if best_model_for_download and best_model_for_download in available_models else 0
+                            index=default_index #Use the determined index
+                            #available_models.index(best_model_for_download) if best_model_for_download and best_model_for_download in available_models else 0
                         )
 
                         if download_model:
