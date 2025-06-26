@@ -3923,22 +3923,38 @@ if(uploaded_file == 'yes'):
                                         # Top individual feature with full name
                                         if 'top_individual_feature' in insights:
                                             top_feat = insights['top_individual_feature']
-                                            st.metric(
-                                                label="Top Individual Feature",
-                                                value=f"{top_feat['importance']:.3f}",
-                                                help=f"Full name: {top_feat['name']}"  # Shows full name on hover
-                                            )
-                                            st.caption(f"**{top_feat['name']}**")  # Full name below metric
+                                            # Clean up the feature name for display
+                                            display_name = top_feat['name'].replace('_', ' ').title()
+                                            if len(display_name) > 15:  # Truncate long names
+                                                display_name = display_name[:12] + "..."
+                                            st.metric("Top Individual Feature", 
+                                                    display_name,
+                                                    f"{top_feat['importance']:.3f}")
+                                            # top_feat = insights['top_individual_feature']
+                                            # st.metric(
+                                            #     label="Top Individual Feature",
+                                            #     value=f"{top_feat['importance']:.3f}",
+                                            #     help=f"Full name: {top_feat['name']}"  # Shows full name on hover
+                                            # )
+                                            # st.caption(f"**{top_feat['name']}**")  # Full name below metric
                                         
                                         # Top composite category with full name
                                         if 'top_composite_category' in insights:
                                             top_comp = insights['top_composite_category']
-                                            st.metric(
-                                                label="Top Composite Category",
-                                                value=f"{top_comp['total_importance']:.3f}",
-                                                help=f"Aggregated importance across all {top_comp['name']} features"
-                                            )
-                                            st.caption(f"**{top_comp['name'].replace('_', ' ')}**")
+                                            category_name = top_comp['name'].replace('_', ' ')
+                                            # if len(category_name) > 15:  # Truncate long names
+                                            #     category_name = category_name[:12] + "..."
+                                            st.metric("Top Composite Category", 
+                                                    category_name,
+                                                    f"{top_comp['total_importance']:.3f}" )
+
+                                            # # top_comp = insights['top_composite_category']
+                                            # # st.metric(
+                                            # #     label="Top Composite Category",
+                                            # #     value=f"{top_comp['total_importance']:.3f}",
+                                            # #     help=f"Aggregated importance across all {top_comp['name']} features"
+                                            # )
+                                            # st.caption(f"**{top_comp['name'].replace('_', ' ')}**")
                                     
                                     with col2:
                                         st.write("**📅 Temporal Patterns:**")
