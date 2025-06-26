@@ -2092,9 +2092,9 @@ if(uploaded_file == 'yes'):
                 )
                 
                 return fig
-
+            #
             def plot_feature_importance_categorical(model, feature_names, model_name):
-                """Plot feature importance with categorical feature grouping"""
+                """Plot feature importance with comprehensive feature grouping"""
                 if hasattr(model, 'feature_importances_'):
                     importances = model.feature_importances_
                     
@@ -2103,11 +2103,67 @@ if(uploaded_file == 'yes'):
                         'Importance': importances
                     })
                     
-                    # Group categorical features
-                    importance_df['Feature_Group'] = importance_df['Feature'].apply(
-                        lambda x: x.split('_')[0] if '_' in x and x.split('_')[0] in get_categorical_features()
-                        else 'Other'
-                    )
+                    # IMPROVED GROUPING LOGIC
+                    def categorize_feature(feature_name):
+                        """Comprehensive feature categorization"""
+                        feature = str(feature_name).lower()
+                        
+                        # Categorical date features
+                        categorical_prefixes = ['month_', 'dayofweek_', 'season_', 'weekend_', 'quarter_', 'monthpart_', 'wind_sector_']
+                        for prefix in categorical_prefixes:
+                            if feature.startswith(prefix):
+                                return prefix.replace('_', '').title()
+                        
+                        # PM10 related features
+                        if 'pm10' in feature:
+                            if 'lag' in feature:
+                                return 'PM10 Lags'
+                            elif 'rolling' in feature or 'ewm' in feature:
+                                return 'PM10 Rolling Stats'
+                            elif 'change' in feature:
+                                return 'PM10 Changes'
+                            else:
+                                return 'PM10 Base'
+                        
+                        # Traffic and activity features
+                        if any(x in feature for x in ['traffic', 'pedestrian', 'city_centre', 'activity']):
+                            if 'lag' in feature or 'rolling' in feature:
+                                return 'Traffic/Activity Lags'
+                            else:
+                                return 'Traffic/Activity'
+                        
+                        # Weather features
+                        if any(x in feature for x in ['temp', 'ws', 'wd', 'wind']):
+                            return 'Weather'
+                        
+                        # Chemical features
+                        if any(x in feature for x in ['no2', 'no', 'nox']):
+                            return 'Chemical'
+                        
+                        # Composite environmental features
+                        if any(x in feature for x in ['dispersion', 'atmospheric', 'stability', 'consistency']):
+                            return 'Environmental Composite'
+                        
+                        # Enhanced features
+                        if any(x in feature for x in ['momentum', 'effectiveness', 'interaction']):
+                            return 'Enhanced Features'
+                        
+                        # Base year feature
+                        if feature == 'year':
+                            return 'Temporal Base'
+                        
+                        # Lag features (catch remaining)
+                        if 'lag' in feature:
+                            return 'Other Lags'
+                        
+                        # Rolling features (catch remaining)
+                        if 'rolling' in feature or 'ewm' in feature:
+                            return 'Other Rolling Stats'
+                        
+                        return 'Other'
+                    
+                    # Apply improved grouping
+                    importance_df['Feature_Group'] = importance_df['Feature'].apply(categorize_feature)
                     
                     # Show top individual features
                     top_features = importance_df.sort_values('Importance', ascending=False).head(20)
@@ -2124,20 +2180,42 @@ if(uploaded_file == 'yes'):
                     
                     fig.update_layout(height=700, width=800)
                     
-                    # Group importance by category
-                    grouped_importance = importance_df.groupby('Feature_Group')['Importance'].sum().sort_values(ascending=False)
+                    # Group importance by category with better aggregation
+                    grouped_importance = importance_df.groupby('Feature_Group')['Importance'].agg({
+                        'Total_Importance': 'sum',
+                        'Count': 'count',
+                        'Max_Individual': 'max'
+                    }).sort_values('Total_Importance', ascending=False)
                     
-                    fig_grouped = px.bar(
-                        x=grouped_importance.values,
+                    # Create grouped figure with more information
+                    fig_grouped = go.Figure()
+                    
+                    fig_grouped.add_trace(go.Bar(
+                        x=grouped_importance['Total_Importance'],
                         y=grouped_importance.index,
                         orientation='h',
+                        name='Total Importance',
+                        text=[f"Count: {count}, Max: {max_val:.3f}" 
+                            for count, max_val in zip(grouped_importance['Count'], grouped_importance['Max_Individual'])],
+                        textposition='auto',
+                    ))
+                    
+                    fig_grouped.update_layout(
                         title=f'Feature Group Importance for {model_name}',
-                        labels={'x': 'Total Importance', 'y': 'Feature Group'}
+                        xaxis_title='Total Importance',
+                        yaxis_title='Feature Group',
+                        height=600,
+                        showlegend=False
                     )
                     
-                    return fig, fig_grouped, importance_df
+                    # Create summary dataframe for display
+                    summary_df = grouped_importance.reset_index()
+                    summary_df.columns = ['Feature Group', 'Total Importance', 'Feature Count', 'Max Individual Importance']
+                    summary_df = summary_df.round(3)
+                    
+                    return fig, fig_grouped, importance_df, summary_df
                 
-                return None, None, None
+                return None, None, None, None
 
             def plot_forecast_with_intervals(historical_data, forecast_data, target_col, model_name):
                 """Plot forecast with prediction intervals - FIXED"""
@@ -2473,8 +2551,13 @@ if(uploaded_file == 'yes'):
                 results.update({'model': model, 'test_pred': y_test_pred, 'train_results': train_results, 'val_results': val_results, 'test_results': test_results, 'best_params': best_params, 'forecast': forecast_df, 'model_type': model_type, 'scaling_info': scaling_info})
                 
                 if model_type in ['Random Forest', 'XGBoost', 'Decision Tree']:
-                    importance_fig, importance_fig_grouped, importance_df = plot_feature_importance_categorical(model, feature_names, model_type.upper())
-                    results['importance_fig'], results['importance_fig_grouped'], results['importance_df'] = importance_fig, importance_fig_grouped, importance_df
+                    # importance_fig, importance_fig_grouped, importance_df = plot_feature_importance_categorical(model, feature_names, model_type.upper())
+                    # results['importance_fig'], results['importance_fig_grouped'], results['importance_df'] = importance_fig, importance_fig_grouped, importance_df
+                    importance_fig, importance_fig_grouped, importance_df, importance_summary = plot_feature_importance_categorical(model, feature_names, model_type.upper())
+                    results['importance_fig'] = importance_fig
+                    results['importance_fig_grouped'] = importance_fig_grouped
+                    results['importance_df'] = importance_df
+                    results['importance_summary'] = importance_summary
                 
                 return results
 
@@ -3445,14 +3528,19 @@ if(uploaded_file == 'yes'):
                                 st.header("🎯 Feature Importance Analysis")
                                 st.info("**Individual Features** show single feature importance")
                                 
-                                tab1, tab2 = st.tabs(["Individual Features", "Feature Groups"])
-                                
+                                tab1, tab2, tab3 = st.tabs(["Individual Features", "Feature Groups", "Summary Table"])
+    
                                 with tab1:
                                     st.plotly_chart(results['importance_fig'], use_container_width=True)
                                 
                                 with tab2:
                                     if 'importance_fig_grouped' in results:
                                         st.plotly_chart(results['importance_fig_grouped'], use_container_width=True)
+                                
+                                with tab3:
+                                    if 'importance_summary' in results:
+                                        st.dataframe(results['importance_summary'], use_container_width=True)
+                                        st.info("💡 **Total Importance** shows the sum of all features in that group.
                             
                             st.header(f"{forecast_days}-Day Forecast")
                             forecast_fig = plot_forecast_with_intervals(
