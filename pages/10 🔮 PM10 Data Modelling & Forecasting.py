@@ -3849,6 +3849,8 @@ if(uploaded_file == 'yes'):
                         
                         if viz_models:
                             # Collect insights from tree-based models
+                            # composite_insights = {}
+                            # UPDATED VERSION - Extract insights from tree-based models
                             composite_insights = {}
                             for model_name in viz_models:
                                 if model_name in st.session_state.model_results:
@@ -3856,8 +3858,15 @@ if(uploaded_file == 'yes'):
                                     if 'importance_df' in results and results['importance_df'] is not None:
                                         imp_df = results['importance_df']
                                         
-                                        # Extract insights
                                         insights = {}
+                                        
+                                        # Find the SINGLE most important feature (consistent with Model Training)
+                                        most_important_feature = imp_df.loc[imp_df['Importance'].idxmax(), 'Feature']
+                                        most_important_value = imp_df['Importance'].max()
+                                        insights['top_individual_feature'] = {
+                                            'name': most_important_feature,
+                                            'importance': most_important_value
+                                        }
                                         
                                         # Day of week insights
                                         dow_features = imp_df[imp_df['Feature'].str.startswith('DayOfWeek_')]
@@ -3865,7 +3874,7 @@ if(uploaded_file == 'yes'):
                                             best_dow = dow_features.loc[dow_features['Importance'].idxmax(), 'Feature']
                                             insights['best_day'] = best_dow.replace('DayOfWeek_', '')
                                         
-                                        # Month insights
+                                        # Month insights  
                                         month_features = imp_df[imp_df['Feature'].str.startswith('Month_')]
                                         if not month_features.empty:
                                             best_month = month_features.loc[month_features['Importance'].idxmax(), 'Feature']
@@ -3877,45 +3886,72 @@ if(uploaded_file == 'yes'):
                                             best_season = season_features.loc[season_features['Importance'].idxmax(), 'Feature']
                                             insights['best_season'] = best_season.replace('Season_', '')
                                         
-                                        # Composite feature insights
+                                        # Composite feature insights (AGGREGATED for category comparison)
                                         composite_features = ['Traffic_Dispersion', 'Wind_Consistency', 'Activity_Index', 'Atmospheric_Stability']
+                                        composite_totals = {}
+                                        
                                         for comp_feature in composite_features:
                                             comp_rows = imp_df[imp_df['Feature'].str.contains(comp_feature)]
                                             if not comp_rows.empty:
                                                 total_importance = comp_rows['Importance'].sum()
+                                                composite_totals[comp_feature] = total_importance
                                                 insights[f'{comp_feature}_importance'] = total_importance
                                         
-                                        composite_insights[model_name] = insights
+                                        # Find top composite CATEGORY (not individual feature)
+                                        if composite_totals:
+                                            top_composite_category = max(composite_totals, key=composite_totals.get)
+                                            insights['top_composite_category'] = {
+                                                'name': top_composite_category,
+                                                'total_importance': composite_totals[top_composite_category]
+                                            }
+                                        
+                                        composite_insights[model_name] = insights   
                             
                             if composite_insights:
                                 st.subheader("📈 Key Temporal & Composite Patterns Discovered")
                                 
-                                st.markdown("💡**Composite Categories** show aggregated importance across all related features (base + lags)")
+                                st.markdown("💡 **Individual Features** show single feature importance | **Composite Categories** show aggregated importance across all related features (base + lags)")
 
                                 for model_name, insights in composite_insights.items():
                                     st.write(f"**{model_name.upper()} Model Findings:**")
                                     
-                                    col1, col2, col3, col4 = st.columns(4)
+                                    # UPDATED: Use 5 columns to include top individual feature
+                                    col1, col2, col3, col4, col5 = st.columns(5)
                                     
                                     with col1:
+                                        # NEW: Top individual feature as a metric
+                                        if 'top_individual_feature' in insights:
+                                            top_feat = insights['top_individual_feature']
+                                            # Clean up the feature name for display
+                                            display_name = top_feat['name'].replace('_', ' ').title()
+                                            if len(display_name) > 15:  # Truncate long names
+                                                display_name = display_name[:12] + "..."
+                                            st.metric("Top Individual Feature", 
+                                                    display_name,
+                                                    f"{top_feat['importance']:.3f}")
+                                    
+                                    with col2:
                                         if 'best_day' in insights:
                                             st.metric("Most Predictive Day", insights['best_day'])
                                     
-                                    with col2:
+                                    with col3:
                                         if 'best_month' in insights:
                                             st.metric("Most Predictive Month", insights['best_month'])
                                     
-                                    with col3:
+                                    with col4:
                                         if 'best_season' in insights:
                                             st.metric("Most Predictive Season", insights['best_season'])
                                     
-                                    with col4:
-                                        # Find most important composite feature
-                                        comp_importances = {k: v for k, v in insights.items() if k.endswith('_importance')}
-                                        if comp_importances:
-                                            best_comp = max(comp_importances, key=comp_importances.get)
-                                            comp_name = best_comp.replace('_importance', '')
-                                            st.metric("Top Composite Feature", comp_name.replace('_', ' '))
+                                    with col5:
+                                        # Show top composite CATEGORY
+                                        if 'top_composite_category' in insights:
+                                            top_comp = insights['top_composite_category']
+                                            category_name = top_comp['name'].replace('_', ' ')
+                                            if len(category_name) > 15:  # Truncate long names
+                                                category_name = category_name[:12] + "..."
+                                            st.metric("Top Composite Category", 
+                                                    category_name,
+                                                    f"{top_comp['total_importance']:.3f}")
                                     
                                     st.write("")
                         
