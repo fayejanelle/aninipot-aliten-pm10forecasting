@@ -3540,7 +3540,7 @@ if(uploaded_file == 'yes'):
                                 with tab3:
                                     if 'importance_summary' in results:
                                         st.dataframe(results['importance_summary'], use_container_width=True)
-                                        st.info("💡 **Total Importance** shows the sum of all features in that group.
+                                        st.info("💡 **Total Importance** shows the sum of all features in that group.")
                             
                             st.header(f"{forecast_days}-Day Forecast")
                             forecast_fig = plot_forecast_with_intervals(
