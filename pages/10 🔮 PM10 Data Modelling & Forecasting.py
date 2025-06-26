@@ -2094,7 +2094,7 @@ if(uploaded_file == 'yes'):
                 return fig
             #
             def plot_feature_importance_categorical(model, feature_names, model_name):
-                """Plot feature importance with comprehensive feature grouping"""
+                """Plot feature importance with comprehensive feature grouping - FIXED"""
                 if hasattr(model, 'feature_importances_'):
                     importances = model.feature_importances_
                     
@@ -2103,7 +2103,7 @@ if(uploaded_file == 'yes'):
                         'Importance': importances
                     })
                     
-                    # IMPROVED GROUPING LOGIC
+                    # IMPROVED GROUPING LOGIC (same as before)
                     def categorize_feature(feature_name):
                         """Comprehensive feature categorization"""
                         feature = str(feature_name).lower()
@@ -2180,11 +2180,13 @@ if(uploaded_file == 'yes'):
                     
                     fig.update_layout(height=700, width=800)
                     
-                    # Group importance by category with better aggregation
-                    grouped_importance = importance_df.groupby('Feature_Group')['Importance'].agg({
-                        'Total_Importance': 'sum',
-                        'Count': 'count',
-                        'Max_Individual': 'max'
+                    # FIXED: Group importance by category - separate aggregations
+                    grouped_data = importance_df.groupby('Feature_Group')
+                    
+                    grouped_importance = pd.DataFrame({
+                        'Total_Importance': grouped_data['Importance'].sum(),
+                        'Count': grouped_data['Importance'].count(),
+                        'Max_Individual': grouped_data['Importance'].max()
                     }).sort_values('Total_Importance', ascending=False)
                     
                     # Create grouped figure with more information
@@ -2551,13 +2553,19 @@ if(uploaded_file == 'yes'):
                 results.update({'model': model, 'test_pred': y_test_pred, 'train_results': train_results, 'val_results': val_results, 'test_results': test_results, 'best_params': best_params, 'forecast': forecast_df, 'model_type': model_type, 'scaling_info': scaling_info})
                 
                 if model_type in ['Random Forest', 'XGBoost', 'Decision Tree']:
+                    importance_results = plot_feature_importance_categorical(model, feature_names, model_type.upper())
+                    if importance_results[0] is not None:  # Check if results exist
+                        results['importance_fig'] = importance_results[0]
+                        results['importance_fig_grouped'] = importance_results[1] 
+                        results['importance_df'] = importance_results[2]
+                        results['importance_summary'] = importance_results[3]
                     # importance_fig, importance_fig_grouped, importance_df = plot_feature_importance_categorical(model, feature_names, model_type.upper())
                     # results['importance_fig'], results['importance_fig_grouped'], results['importance_df'] = importance_fig, importance_fig_grouped, importance_df
-                    importance_fig, importance_fig_grouped, importance_df, importance_summary = plot_feature_importance_categorical(model, feature_names, model_type.upper())
-                    results['importance_fig'] = importance_fig
-                    results['importance_fig_grouped'] = importance_fig_grouped
-                    results['importance_df'] = importance_df
-                    results['importance_summary'] = importance_summary
+                    # importance_fig, importance_fig_grouped, importance_df, importance_summary = plot_feature_importance_categorical(model, feature_names, model_type.upper())
+                    # results['importance_fig'] = importance_fig
+                    # results['importance_fig_grouped'] = importance_fig_grouped
+                    # results['importance_df'] = importance_df
+                    # results['importance_summary'] = importance_summary
                 
                 return results
 
