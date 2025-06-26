@@ -3915,47 +3915,46 @@ if(uploaded_file == 'yes'):
                                 for model_name, insights in composite_insights.items():
                                     st.write(f"**{model_name.upper()} Model Findings:**")
                                     
-                                    # UPDATED: Use 4 columns to include top individual feature
-                                    col1, col2 = st.columns(2)
+                                    # OPTION 1: Use wider layout with better formatting
+                                    col1, col2 = st.columns([1, 1])  # Split into 2 main columns
                                     
                                     with col1:
-                                        # NEW: Top individual feature as a metric
+                                        st.write("**🎯 Feature Importance:**")
+                                        # Top individual feature with full name
                                         if 'top_individual_feature' in insights:
                                             top_feat = insights['top_individual_feature']
-                                            # Clean up the feature name for display
-                                            display_name = top_feat['name'].replace('_', ' ').title()
-                                            if len(display_name) > 15:  # Truncate long names
-                                                display_name = display_name[:12] + "..."
-                                            st.metric("Top Individual Feature", 
-                                                    display_name,
-                                                    f"{top_feat['importance']:.3f}")
-                                    
-                                    with col2:
-                                        # Show top composite CATEGORY
+                                            st.metric(
+                                                label="Top Individual Feature",
+                                                value=f"{top_feat['importance']:.3f}",
+                                                help=f"Full name: {top_feat['name']}"  # Shows full name on hover
+                                            )
+                                            st.caption(f"**{top_feat['name']}**")  # Full name below metric
+                                        
+                                        # Top composite category with full name
                                         if 'top_composite_category' in insights:
                                             top_comp = insights['top_composite_category']
-                                            category_name = top_comp['name'].replace('_', ' ')
-                                            if len(category_name) > 15:  # Truncate long names
-                                                category_name = category_name[:12] + "..."
-                                            st.metric("Top Composite Category", 
-                                                    category_name,
-                                                    f"{top_comp['total_importance']:.3f}")
+                                            st.metric(
+                                                label="Top Composite Category",
+                                                value=f"{top_comp['total_importance']:.3f}",
+                                                help=f"Aggregated importance across all {top_comp['name']} features"
+                                            )
+                                            st.caption(f"**{top_comp['name'].replace('_', ' ')}**")
+                                    
+                                    with col2:
+                                        st.write("**📅 Temporal Patterns:**")
                                         
-                                    
-                                    col3, col4, col5= st.columns(3)
-
-                                    with col3:
-                                        if 'best_day' in insights:
-                                            st.metric("Most Predictive Day", insights['best_day'])
-
-                                    with col4:
-                                        if 'best_month' in insights:
-                                            st.metric("Most Predictive Month", insights['best_month'])
-                                    
-                                    with col5:
-                                        if 'best_season' in insights:
-                                            st.metric("Most Predictive Season", insights['best_season'])
-                                                                           
+                                        # Create sub-columns for temporal features
+                                        temp_col1, temp_col2 = st.columns(2)
+                                        
+                                        with temp_col1:
+                                            if 'best_day' in insights:
+                                                st.metric("Most Predictive Day", insights['best_day'])
+                                            if 'best_season' in insights:
+                                                st.metric("Most Predictive Season", insights['best_season'])
+                                        
+                                        with temp_col2:
+                                            if 'best_month' in insights:
+                                                st.metric("Most Predictive Month", insights['best_month'])
                                     
                                     st.write("")
                         
