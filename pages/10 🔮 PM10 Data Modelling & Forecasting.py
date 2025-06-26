@@ -35,6 +35,10 @@ from scipy import stats
 import optuna
 from optuna.integration import OptunaSearchCV
 
+# Smart Core Allocation Implementation
+import os
+import multiprocessing as mp
+
 # Suppress warnings
 warnings.filterwarnings('ignore')
 
@@ -66,6 +70,73 @@ if(uploaded_file == 'yes'):
             st.title("🔮 PM10 Data Modelling & Forecasting (Short-Term Daily )")
             st.write("Enhanced forecasting with composite environmental features, excluding AQI, PM2.5, and NOx to prevent data leakage and improve model generalization.")
 
+            # ============ SMART CORE ALLOCATION SYSTEM ============
+
+            def get_optimal_core_allocation():
+                """
+                Smart core allocation based on system resources and task type
+                Returns optimal n_jobs values for different operations
+                """
+                total_cores = mp.cpu_count()
+                
+                # Detect system type and adjust accordingly
+                if total_cores <= 2:
+                    # Low-end systems
+                    core_config = {
+                        'search_n_jobs': 1,
+                        'cv_n_jobs': 1,
+                        'tree_n_jobs': 1,
+                        'ensemble_n_jobs': 2 if total_cores == 2 else 1
+                    }
+                elif total_cores <= 4:
+                    # Mid-range systems
+                    core_config = {
+                        'search_n_jobs': 2,
+                        'cv_n_jobs': 2,
+                        'tree_n_jobs': 2,
+                        'ensemble_n_jobs': 3
+                    }
+                elif total_cores <= 8:
+                    # High-end consumer systems
+                    core_config = {
+                        'search_n_jobs': 4,
+                        'cv_n_jobs': 3,
+                        'tree_n_jobs': 4,
+                        'ensemble_n_jobs': 6
+                    }
+                else:
+                    # Server/workstation systems
+                    reserve_cores = max(2, total_cores // 8)  # Reserve cores for system
+                    available_cores = total_cores - reserve_cores
+                    
+                    core_config = {
+                        'search_n_jobs': min(6, available_cores // 2),
+                        'cv_n_jobs': min(4, available_cores // 3),
+                        'tree_n_jobs': min(8, available_cores // 2),
+                        'ensemble_n_jobs': min(12, int(available_cores * 0.8))
+                    }
+                
+                # Add system info for debugging
+                core_config['total_cores'] = total_cores
+                core_config['detected_system'] = (
+                    'low-end' if total_cores <= 2 else
+                    'mid-range' if total_cores <= 4 else
+                    'high-end' if total_cores <= 8 else
+                    'server/workstation'
+                )
+                
+                return core_config
+
+            # Initialize core allocation (call this once at startup)
+            CORE_CONFIG = get_optimal_core_allocation()
+
+            # Extract specific values for easy access
+            search_n_jobs = CORE_CONFIG['search_n_jobs']
+            cv_n_jobs = CORE_CONFIG['cv_n_jobs'] 
+            tree_n_jobs = CORE_CONFIG['tree_n_jobs']
+            ensemble_n_jobs = CORE_CONFIG['ensemble_n_jobs']
+
+            #### ---------------------------------------- ####
             def create_composite_features(df):
                 """Create enhanced composite features for better PM10 prediction"""
                 df_comp = df.copy()
@@ -744,7 +815,7 @@ if(uploaded_file == 'yes'):
             def perform_kfold_cv(model, X, y, n_folds=3, scoring='neg_mean_squared_error'):
                 """Reduced K-fold CV to prevent overfitting assessment bias"""
                 cv = TimeSeriesSplit(n_splits=n_folds)
-                scores = cross_val_score(model, X, y, cv=cv, scoring=scoring, n_jobs=-1)
+                scores = cross_val_score(model, X, y, cv=cv, scoring=scoring, n_jobs=cv_n_jobs) #PREVIOUS: n_jobs=-1
                 return -scores
 
             # Enhanced hyperparameter spaces for better PM10 prediction #rf 'max_samples': [0.7, 0.8, 0.9]
@@ -908,7 +979,7 @@ if(uploaded_file == 'yes'):
                         param_space,
                         cv=cv,
                         scoring=scoring,
-                        n_jobs=-1,
+                        n_jobs=search_n_jobs,  # UPDATED: Smart allocation; PREVIOUS = -1
                         verbose=1 if progress_callback else 0  # Add verbose if progress callback
                     )
                 else:
@@ -918,7 +989,7 @@ if(uploaded_file == 'yes'):
                         n_iter=50,
                         cv=cv,
                         scoring=scoring,
-                        n_jobs=-1,
+                        n_jobs=search_n_jobs,  # UPDATED: Smart allocation; PREVIOUS = -1
                         verbose=1 if progress_callback else 0,  # Add verbose if progress callback
                         random_state=42
                     )
@@ -1170,7 +1241,7 @@ if(uploaded_file == 'yes'):
                         method='random', cv_folds=n_folds,  auto_cv=auto_cv
                     )
                 else:
-                    model = KNeighborsRegressor(n_neighbors=5, weights='distance')
+                    model = KNeighborsRegressor(n_neighbors=5, weights='distance', n_jobs=cv_n_jobs) # UPDATED: Smart allocation for KNN
                     model.fit(X_train_scaled, y_train_clean)
                     best_params = {'n_neighbors': 5}
                 
@@ -1205,7 +1276,7 @@ if(uploaded_file == 'yes'):
                     model = RandomForestRegressor(n_estimators=500, 
                         max_depth=None, min_samples_split=2,
                         min_samples_leaf=1,max_samples=1.0,
-                        random_state=42, n_jobs=search_n_jobs, bootstrap=True) #True , max_samples=0.7
+                        random_state=42, n_jobs=ensemble_n_jobs, bootstrap=True) #True , max_samples=0.7, #SMART: n_jobs=search_n_jobs
                     model.fit(X_train, y_train)
                     # best_params = {'n_estimators': 100}
                 
@@ -1230,7 +1301,7 @@ if(uploaded_file == 'yes'):
                         method='random', cv_folds=n_folds, auto_cv=auto_cv
                     )
                 else:
-                    model = XGBRegressor(n_estimators=100, random_state=42, n_jobs=-1)
+                    model = XGBRegressor(n_estimators=100, random_state=42, n_jobs=tree_n_jobs) # UPDATED: Smart allocation n_jobs=-1
                     model.fit(X_train, y_train)
                     best_params = {'n_estimators': 100}
 
@@ -2698,6 +2769,26 @@ if(uploaded_file == 'yes'):
                     comprehensive environmental datasets including meteorological and traffic data.
                     """)
 
+            # ============ SYSTEM INFO DISPLAY FUNCTION ============
+
+            def display_core_allocation_info():
+                """Display core allocation information to users"""
+                st.sidebar.markdown("---")
+                st.sidebar.subheader("🔧 System Optimization")
+                
+                core_info = get_optimal_core_allocation()
+                
+                with st.sidebar.expander("Core Allocation Details", expanded=False):
+                    st.write(f"**System Type:** {core_info['detected_system'].title()}")
+                    st.write(f"**Total CPU Cores:** {core_info['total_cores']}")
+                    st.write("")
+                    st.write("**Optimized Allocation:**")
+                    st.write(f"• Hyperparameter Search: {core_info['search_n_jobs']} cores")
+                    st.write(f"• Cross-Validation: {core_info['cv_n_jobs']} cores")
+                    st.write(f"• Tree Models: {core_info['tree_n_jobs']} cores")
+                    st.write(f"• Ensemble Models: {core_info['ensemble_n_jobs']} cores")
+                    st.write("")
+                    st.success("✅ Smart allocation prevents resource conflicts!")
 
             # Main Streamlit app
             def main():
@@ -3261,6 +3352,8 @@ if(uploaded_file == 'yes'):
                                     st.write("- Check data quality and format")
                                     st.write("- Try a different model type")
                                     st.write("- Reduce dataset size if memory issues")
+
+                        display_core_allocation_info()
                         
                         # Show model results if available
                         if model_type in st.session_state.model_results:
