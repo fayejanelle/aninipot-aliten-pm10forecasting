@@ -3925,8 +3925,8 @@ if(uploaded_file == 'yes'):
                                             top_feat = insights['top_individual_feature']
                                             # Clean up the feature name for display
                                             display_name = top_feat['name'].replace('_', ' ').title()
-                                            if len(display_name) > 15:  # Truncate long names
-                                                display_name = display_name[:12] + "..."
+                                            # if len(display_name) > 15:  # Truncate long names
+                                            #     display_name = display_name[:12] + "..."
                                             st.metric("Top Individual Feature", 
                                                     display_name,
                                                     f"{top_feat['importance']:.3f}")
