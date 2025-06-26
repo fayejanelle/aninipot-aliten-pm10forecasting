@@ -3534,7 +3534,7 @@ if(uploaded_file == 'yes'):
                             # Enhanced feature importance with categorical grouping
                             if 'importance_fig' in results and results['importance_fig'] is not None:
                                 st.header("🎯 Feature Importance Analysis")
-                                st.info("**Individual Features** show single feature importance")
+                                st.markdown("**Individual Features** show single feature importance")
                                 
                                 tab1, tab2, tab3 = st.tabs(["Individual Features", "Feature Groups", "Summary Table"])
     
@@ -3890,7 +3890,7 @@ if(uploaded_file == 'yes'):
                             if composite_insights:
                                 st.subheader("📈 Key Temporal & Composite Patterns Discovered")
                                 
-                                st.info("**Composite Categories** show aggregated importance across all related features (base + lags)")
+                                st.markdown("**Composite Categories** show aggregated importance across all related features (base + lags)")
 
                                 for model_name, insights in composite_insights.items():
                                     st.write(f"**{model_name.upper()} Model Findings:**")
