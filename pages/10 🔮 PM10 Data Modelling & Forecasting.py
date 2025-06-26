@@ -3915,8 +3915,8 @@ if(uploaded_file == 'yes'):
                                 for model_name, insights in composite_insights.items():
                                     st.write(f"**{model_name.upper()} Model Findings:**")
                                     
-                                    # UPDATED: Use 5 columns to include top individual feature
-                                    col1, col2, col3, col4, col5 = st.columns(5)
+                                    # UPDATED: Use 4 columns to include top individual feature
+                                    col1, col2 = st.columns(2)
                                     
                                     with col1:
                                         # NEW: Top individual feature as a metric
@@ -3931,18 +3931,6 @@ if(uploaded_file == 'yes'):
                                                     f"{top_feat['importance']:.3f}")
                                     
                                     with col2:
-                                        if 'best_day' in insights:
-                                            st.metric("Most Predictive Day", insights['best_day'])
-                                    
-                                    with col3:
-                                        if 'best_month' in insights:
-                                            st.metric("Most Predictive Month", insights['best_month'])
-                                    
-                                    with col4:
-                                        if 'best_season' in insights:
-                                            st.metric("Most Predictive Season", insights['best_season'])
-                                    
-                                    with col5:
                                         # Show top composite CATEGORY
                                         if 'top_composite_category' in insights:
                                             top_comp = insights['top_composite_category']
@@ -3952,6 +3940,22 @@ if(uploaded_file == 'yes'):
                                             st.metric("Top Composite Category", 
                                                     category_name,
                                                     f"{top_comp['total_importance']:.3f}")
+                                        
+                                    
+                                    col3, col4, col5= st.columns(3)
+
+                                    with col3:
+                                        if 'best_day' in insights:
+                                            st.metric("Most Predictive Day", insights['best_day'])
+
+                                    with col4:
+                                        if 'best_month' in insights:
+                                            st.metric("Most Predictive Month", insights['best_month'])
+                                    
+                                    with col5:
+                                        if 'best_season' in insights:
+                                            st.metric("Most Predictive Season", insights['best_season'])
+                                                                           
                                     
                                     st.write("")
                         
