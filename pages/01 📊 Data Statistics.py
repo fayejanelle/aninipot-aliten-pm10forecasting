@@ -496,7 +496,7 @@ if(uploaded_file == 'yes'):
                         # Create heatmap of missing values
                         fig = px.imshow(
                             df.isna().T,
-                            color_continuous_scale=['white', bar_color],
+                            color_continuous_scale=['white', 'red'],
                             labels=dict(x="Row Index", y="Column", color="Missing"),
                             title="Missing Values Heatmap"
                         )
