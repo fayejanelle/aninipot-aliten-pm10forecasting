@@ -2604,7 +2604,7 @@ if(uploaded_file == 'yes'):
                         for col in temp_features:
                             if col in df_imputed.columns and col not in st.session_state.raw_data.columns:
                                 df_imputed = df_imputed.drop(columns=[col])
-                        df_imputed = df_imputed.drop(columns =['timestamp', 'Date_parsed', 'has_event']) ##FAYE - REMOVING ADDT'L COLUMNS
+                        
                         st.session_state.processed_data = df_imputed
                         
                         # Complete
@@ -3264,6 +3264,9 @@ if(uploaded_file == 'yes'):
                 
                 if st.session_state.processed_data is not None:
                     # Download button
+                    download_df = st.session_state.processed_data #F
+                    download_df = download_df.drop(columns =['timestamp', 'Date_parsed', 'has_event']) ##FAYE - REMOVING ADDT'L COLUMNS
+                    st.session_state.processed_data = download_df #F
                     csv = st.session_state.processed_data.to_csv(index=False)
                     st.session_state['imputed_df'] = st.session_state.processed_data
 
