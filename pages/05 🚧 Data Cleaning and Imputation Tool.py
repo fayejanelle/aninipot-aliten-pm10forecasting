@@ -3282,8 +3282,8 @@ if(uploaded_file == 'yes'):
                     # Export statistics
                     st.subheader("Export Summary")
                     st.write(f"- **File name:** imputed_data_{download_time.strftime('%Y%m%d_%H%M%S')}.csv")
-                    st.write(f"- **Rows:** {len(st.session_state.processed_data):,}")
-                    st.write(f"- **Columns:** {len(st.session_state.processed_data.columns)}")
+                    st.write(f"- **Rows:** {len(download_df.processed_data):,}")
+                    st.write(f"- **Columns:** {len(download_df.columns)}")
                     st.write(f"- **Size:** ~{len(csv) / 1024 / 1024:.2f} MB")
                     
                     # Generate event info
