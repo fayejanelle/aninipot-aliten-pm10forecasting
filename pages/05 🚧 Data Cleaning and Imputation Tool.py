@@ -3267,7 +3267,7 @@ if(uploaded_file == 'yes'):
                     download_df = st.session_state.processed_data #F
                     download_df = download_df.drop(columns =['timestamp', 'Date_parsed', 'has_event']) ##FAYE - REMOVING ADDT'L COLUMNS
                     # st.session_state.processed_data = download_df #F
-                    csv = st.session_state.processed_data.to_csv(index=False)
+                    csv = download_df.to_csv(index=False) #F st.session_state.processed_data
                     st.session_state['imputed_df'] = download_df #F st.session_state.processed_data
 
                     st.session_state['imputed'] = 'yes'
