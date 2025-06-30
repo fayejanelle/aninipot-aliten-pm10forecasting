@@ -5,6 +5,12 @@ import base64
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
+if not st.session_state.authenticated:
+    st.markdown('⛔ [ATTENTION] Please login through the main app to access this page.')
+else:
+    st.title("✨ About Us")
+    # st.markdown('HELLO WORLD ^_^')
+
     # Custom CSS for styling
     st.markdown("""
     <style>
@@ -191,10 +197,3 @@ if "authenticated" not in st.session_state:
             </p>
         </div>
         """, unsafe_allow_html=True)
-
-
-if not st.session_state.authenticated:
-    st.markdown('⛔ [ATTENTION] Please login through the main app to access this page.')
-else:
-    st.title("✨ About Us")
-    st.markdown('HELLO WORLD ^_^')
