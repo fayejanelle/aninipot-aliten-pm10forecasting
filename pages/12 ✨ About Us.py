@@ -133,7 +133,7 @@ else:
         
         # Skills tags for Janice
         st.markdown("**Core Expertise:**")
-        skills_janice = ["Systems Operations", "Network Management", "Data Cleaning", "Scientific Imputation", "Dashboard Development"]
+        skills_janice = ["Systems Operations", "Network Management", "Data Cleaning", "Scientific Imputation", "Technical Writing"]
         for skill in skills_janice:
             st.markdown(f'<span class="skills-tag">{skill}</span>', unsafe_allow_html=True)
 
@@ -166,7 +166,7 @@ else:
         
         # Skills tags for Faye
         st.markdown("**Core Expertise:**")
-        skills_faye = ["Quality Engineering", "Data Strategy", "Forecasting", "Feature Engineering", "Machine Learning"]
+        skills_faye = ["Quality Engineering", "Data Strategy", "Machine Learning", "Feature Engineering", "Dashboard Development"]
         for skill in skills_faye:
             st.markdown(f'<span class="skills-tag">{skill}</span>', unsafe_allow_html=True)
 
@@ -177,7 +177,7 @@ else:
         <h2 style="color: #2E86AB; margin-bottom: 1rem;">Our Collaborative Approach</h2>
         <div style="font-size: 1.1rem; color: #666; max-width: 900px; margin: 0 auto; line-height: 1.6;">
             Together, we bring a unique combination of operational reliability and analytical innovation. 
-            Our complementary skills in systems management, quality assurance, and data science enable us 
+            Our complementary skills in systems management, quality engineering, and data science enable us 
             to tackle complex challenges from multiple angles — ensuring both technical soundness and 
             meaningful insights in every project we undertake.
         </div>
@@ -186,14 +186,14 @@ else:
 
     # Contact or connect section
     st.markdown("---")
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.markdown("""
-        <div style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                    color: white; padding: 2rem; border-radius: 15px; margin: 2rem 0;">
-            <h3 style="margin-bottom: 1rem;">Ready to Collaborate?</h3>
-            <p style="font-size: 1.1rem; margin-bottom: 0;">
-                We're always excited to tackle new data challenges and build innovative solutions.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+    # col1, col2, col3 = st.columns([1, 2, 1])
+    # with col2:
+    #     st.markdown("""
+    #     <div style="text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    #                 color: white; padding: 2rem; border-radius: 15px; margin: 2rem 0;">
+    #         <h3 style="margin-bottom: 1rem;">Ready to Collaborate?</h3>
+    #         <p style="font-size: 1.1rem; margin-bottom: 0;">
+    #             We're always excited to tackle new data challenges and build innovative solutions.
+    #         </p>
+    #     </div>
+    #     """, unsafe_allow_html=True)
