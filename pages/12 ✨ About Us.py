@@ -105,7 +105,7 @@ else:
     col1, col2 = st.columns(2)
 
     # Janice's profile
-    with col1:
+    with col2:
         st.markdown("""
         <div class="team-member-card">
             <div class="member-name">Janice</div>
@@ -138,7 +138,7 @@ else:
             st.markdown(f'<span class="skills-tag">{skill}</span>', unsafe_allow_html=True)
 
     # Faye's profile
-    with col2:
+    with col1:
         st.markdown("""
         <div class="team-member-card">
             <div class="member-name">Faye</div>
